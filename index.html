@@ -243,7 +243,9 @@
                                             <tbody data-bind="foreach: players">
                                                 <tr data-bind="css: { 'first-rep': firstReplacement }">
                                                     <td class="num" data-bind="text: number"></td>
-                                                    <td data-bind="text: name"></td>
+                                                    <td data-bind="title: capsTitle"><span data-bind="text: name"></span><!-- ko if: milestone -->
+                                                        <span class="milestone" data-bind="text: milestone"></span>
+                                                    <!-- /ko --></td>
                                                     <td class="secondaryText" data-bind="text: position"></td>
                                                 </tr>
                                             </tbody>

@@ -114,13 +114,32 @@ var loadRankings = function (rankingsSource, startDate, fixtures, event) {
 
 // Parse a /match/{id}/summary response into what the fixture detail panel shows.
 var parseMatchDetail = function (data) {
+    // The caps figure the API supplies with each player is their CURRENT
+    // career total, not the count at the time of the match (the same number
+    // appears across all of a player's historical matches). So caps and
+    // milestones are only shown for matches that haven't finished, where the
+    // current total is also the pre-match count - making a debut or an
+    // upcoming round-number cap accurate.
+    var complete = !!(data.match && data.match.status === 'C');
     var teams = (data.teams || []).map(function (t) {
         var list = (t.teamList && t.teamList.list) || [];
         var players = list.map(function (e) {
+            // Coaches and other non-players appear in the list too; only
+            // entries with the Player role get caps counts and milestones.
+            var isPlayer = !e.player || !e.player.role || e.player.role === 'Player';
+            var caps = (!complete && isPlayer && e.player && typeof e.player.caps === 'number') ? e.player.caps : null;
+            var milestone = null;
+            if (caps === 0) {
+                milestone = 'Debut';
+            } else if (caps !== null && (caps + 1) % 50 === 0) {
+                milestone = (caps + 1) + 'th cap';
+            }
             return {
                 number: e.number || '',
                 name: (e.player && e.player.name && e.player.name.display) || '',
                 position: e.positionLabel || e.position || '',
+                capsTitle: caps !== null ? caps + (caps === 1 ? ' cap' : ' caps') : null,
+                milestone: milestone,
                 firstReplacement: false
             };
         });
