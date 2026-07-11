@@ -165,7 +165,8 @@
                             <!-- ko if: triesMatter -->
                             <td class="details-center">Tries</td>
                             <!-- /ko -->
-                            <td class="details-right" colspan="4" data-bind="text: ($data.venueNameAndCountry || '') + ($data.switched() ? '*' : ''), title: ($data.venueCity || '') + ($data.switched() ? ' (home advantage to &quot;away&quot; team)' : '')"></td>
+                            <td class="details-right" colspan="3" data-bind="text: ($data.venueNameAndCountry || '') + ($data.switched() ? '*' : ''), title: ($data.venueCity || '') + ($data.switched() ? ' (home advantage to &quot;away&quot; team)' : '')"></td>
+                            <td class="details-right"><a href="#" title="Match timeline" data-bind="visible: matchId, click: toggleTimeline, text: timelineVisible() ? 'hide' : 'TL'"></a></td>
                             <td class="details-right"><a href="#" title="Team sheets and officials" data-bind="visible: matchId, click: toggleDetail, text: detailVisible() ? 'hide' : 'XV'"></a></td>
                         </tr>
                         <!-- /ko -->
@@ -249,6 +250,56 @@
                                         </table>
                                     </div>
                                 </div>
+                                <!-- /ko -->
+                            </td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko if: timelineVisible -->
+                        <tr class="match-detail">
+                            <td colspan="13">
+                                <!-- ko if: timelineLoading -->
+                                <span class="secondaryText">Loading timeline&hellip;</span>
+                                <!-- /ko -->
+                                <!-- ko with: timeline -->
+                                <!-- ko if: error -->
+                                <span class="secondaryText">Could not load the timeline.</span>
+                                <!-- /ko -->
+                                <table class="tl">
+                                    <thead>
+                                        <tr>
+                                            <th class="tl-home" data-bind="text: homeTeam"></th>
+                                            <th></th>
+                                            <th class="tl-away" data-bind="text: awayTeam"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: rows">
+                                        <!-- ko if: $data.marker -->
+                                        <tr class="tl-marker">
+                                            <td colspan="3"><span data-bind="text: marker"></span> <span class="tl-score" data-bind="text: score"></span></td>
+                                        </tr>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: $data.marker -->
+                                        <tr>
+                                            <td class="tl-side tl-home">
+                                                <!-- ko with: home -->
+                                                <!-- ko ifnot: isSub --><span data-bind="text: player"></span> <span class="secondaryText" data-bind="text: label"></span><!-- /ko -->
+                                                <!-- ko if: isSub --><span class="sub-on">&#9650;</span> <span data-bind="text: on"></span>&ensp;<span class="sub-off">&#9660;</span> <span data-bind="text: off"></span><!-- /ko -->
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="tl-mid">
+                                                <span class="tl-time secondaryText" data-bind="text: time"></span>
+                                                <!-- ko if: score --><span class="tl-score" data-bind="text: score"></span><!-- /ko -->
+                                            </td>
+                                            <td class="tl-side tl-away">
+                                                <!-- ko with: away -->
+                                                <!-- ko ifnot: isSub --><span class="secondaryText" data-bind="text: label"></span> <span data-bind="text: player"></span><!-- /ko -->
+                                                <!-- ko if: isSub --><span class="sub-on">&#9650;</span> <span data-bind="text: on"></span>&ensp;<span class="sub-off">&#9660;</span> <span data-bind="text: off"></span><!-- /ko -->
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                        <!-- /ko -->
+                                    </tbody>
+                                </table>
                                 <!-- /ko -->
                             </td>
                         </tr>

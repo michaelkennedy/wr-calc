@@ -148,7 +148,100 @@ var parseMatchDetail = function (data) {
             display: name + (country ? ' (' + country + ')' : '')
         };
     });
-    return { error: false, teams: teams, officials: officials };
+
+    // Map player ids (and altIds) to names, for the timeline.
+    var playerNames = {};
+    (data.teams || []).forEach(function (t) {
+        (((t.teamList && t.teamList.list)) || []).forEach(function (e) {
+            var p = e.player;
+            if (p && p.name && p.name.display) {
+                if (p.id) playerNames[p.id] = p.name.display;
+                if (p.altId) playerNames[p.altId] = p.name.display;
+            }
+        });
+    });
+
+    return { error: false, teams: teams, officials: officials, playerNames: playerNames };
+};
+
+// Parse a /match/{id}/timeline response for the fixture timeline panel:
+// scores, cards and substitutions, one row per event, with the home team's
+// events on the left, the away team's on the right, and a running score in
+// the middle. playerNames maps player ids (and altIds) to display names,
+// since the timeline itself only carries ids.
+var parseMatchTimeline = function (data, playerNames) {
+    var teams = (data.match && data.match.teams) || [];
+
+    var score = [0, 0];
+    var rows = [];
+    var pendingSubs = {};
+    var currentScore = function () { return score[0] + ' - ' + score[1]; };
+
+    // The feed is ordered by phase (L1 = first half, L2 = second half), so
+    // first-half stoppage time (say 42:20) correctly precedes second-half
+    // events whose clock restarts at 40:00. Insert a Half time marker at the
+    // phase transition to make that readable. (The feed's own status-change
+    // entries can arrive after the first second-half events, so the
+    // transition between rendered events is the reliable signal.)
+    var lastPhase = null;
+    var halfTimeAdded = false;
+
+    (data.timeline || []).forEach(function (t) {
+        if (!t.group || t.group === 'MS') return; // match status changes
+
+        if (!halfTimeAdded && lastPhase === 'L1' && (t.phase === 'LHT' || t.phase === 'L2')) {
+            rows.push({ marker: 'Half time', score: currentScore(), time: '', home: null, away: null });
+            halfTimeAdded = true;
+        }
+        if (t.phase) {
+            lastPhase = t.phase;
+        }
+
+        var player = playerNames[t.playerId] || '';
+        var side = t.teamIndex === 0 ? 'home' : 'away';
+
+        // Substitutions arrive as an on and an off entry sharing a link id,
+        // in either order; combine each pair into one cell.
+        if (t.group === 'Sub On' || t.group === 'Sub Off') {
+            var pair = pendingSubs[t.link];
+            if (!pair) {
+                var cell = { isSub: true, on: '', off: '', label: '' };
+                var row = { time: t.time.label, score: '', home: null, away: null };
+                row[side] = cell;
+                pair = pendingSubs[t.link] = { cell: cell, row: row, seen: 0 };
+            }
+            if (t.group === 'Sub On') {
+                pair.cell.on = player;
+            } else {
+                pair.cell.off = player;
+            }
+            pair.seen++;
+            if (pair.seen === 2) {
+                rows.push(pair.row);
+            }
+            return;
+        }
+
+        var scoreText = '';
+        if (t.points) {
+            score[t.teamIndex] += t.points;
+            scoreText = currentScore();
+        }
+        var eventRow = { time: t.time.label, score: scoreText, home: null, away: null };
+        eventRow[side] = { isSub: false, label: t.typeLabel, player: player, on: '', off: '' };
+        rows.push(eventRow);
+    });
+
+    if (data.match && data.match.status === 'C') {
+        rows.push({ marker: 'Full time', score: currentScore(), time: '', home: null, away: null });
+    }
+
+    return {
+        error: false,
+        homeTeam: (teams[0] && teams[0].name) || '',
+        awayTeam: (teams[1] && teams[1].name) || '',
+        rows: rows
+    };
 };
 
 // Format a kickoff time for display; produces the same output as the old

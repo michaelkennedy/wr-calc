@@ -373,6 +373,62 @@ body {
             padding-top: 3px;
         }
     }
+    // The match timeline: home events left, away events right, score down
+    // the middle.
+    table.tl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+
+        th.tl-home {
+            text-align: right;
+        }
+        th.tl-away {
+            text-align: left;
+        }
+        td {
+            padding: 2px 8px;
+        }
+        .tl-side {
+            width: 45%;
+        }
+        td.tl-home {
+            text-align: right;
+        }
+        td.tl-away {
+            text-align: left;
+        }
+        .tl-mid {
+            text-align: center;
+            white-space: nowrap;
+
+            .tl-time {
+                font-size: 10px;
+            }
+            .tl-score {
+                font-weight: 500;
+                margin-left: 6px;
+            }
+        }
+        tr.tl-marker td {
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+            padding: 3px 8px;
+            @extend .secondaryText;
+
+            .tl-score {
+                font-weight: 500;
+                margin-left: 6px;
+            }
+        }
+        .sub-on {
+            color: $primary-2;
+        }
+        .sub-off {
+            color: $accent;
+        }
+    }
 }
 
 // Team flags, shown in the rankings and beside the fixture team dropdowns.

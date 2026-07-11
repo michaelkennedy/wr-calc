@@ -33,11 +33,24 @@ var FixtureViewModel = function (parent) {
     // Set when the fixture was loaded from the WR match API.
     this.matchId = null;
 
-    // On-demand match detail (team sheets and officials) from the summary API.
+    // On-demand match detail (team sheets and officials) from the summary
+    // API, and the match timeline on its own toggle. The parsed summary is
+    // shared: the timeline needs its player-name map, so whichever panel is
+    // opened first triggers the summary request exactly once.
     this.detail = ko.observable(null);
     this.detailVisible = ko.observable(false);
     this.detailLoading = ko.observable(false);
+    this.timeline = ko.observable(null);
+    this.timelineVisible = ko.observable(false);
+    this.timelineLoading = ko.observable(false);
     var self = this;
+    var parsedSummary = null;
+    var getParsedSummary = function () {
+        if (!parsedSummary) {
+            parsedSummary = getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/summary').then(parseMatchDetail);
+        }
+        return parsedSummary;
+    };
     this.toggleDetail = function () {
         if (self.detailVisible()) {
             self.detailVisible(false);
@@ -46,12 +59,32 @@ var FixtureViewModel = function (parent) {
         self.detailVisible(true);
         if (!self.detail() && !self.detailLoading() && self.matchId) {
             self.detailLoading(true);
-            getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/summary').then(function (data) {
-                self.detail(parseMatchDetail(data));
+            getParsedSummary().then(function (detail) {
+                self.detail(detail);
             }).catch(function () {
                 self.detail({ error: true, officials: [], teams: [] });
             }).then(function () {
                 self.detailLoading(false);
+            });
+        }
+    };
+    this.toggleTimeline = function () {
+        if (self.timelineVisible()) {
+            self.timelineVisible(false);
+            return;
+        }
+        self.timelineVisible(true);
+        if (!self.timeline() && !self.timelineLoading() && self.matchId) {
+            self.timelineLoading(true);
+            Promise.all([
+                getParsedSummary(),
+                getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/timeline')
+            ]).then(function (results) {
+                self.timeline(parseMatchTimeline(results[1], results[0].playerNames));
+            }).catch(function () {
+                self.timeline({ error: true, homeTeam: '', awayTeam: '', rows: [] });
+            }).then(function () {
+                self.timelineLoading(false);
             });
         }
     };
