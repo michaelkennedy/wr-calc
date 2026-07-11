@@ -28,7 +28,7 @@ var RankingViewModel = function (rawRanking) {
         } else if (pos > previousPos) {
             return '<span title="was ' + previousPos + '">(&darr;' + (pos - previousPos) + ')</span>';
         } else {
-            return '<span style="visibility: hidden;" aria-hidden="true">(&rarr;' + 0 + ')</span>';
+            return '<span class="invisible" aria-hidden="true">(&rarr;' + 0 + ')</span>';
         }
     }, this);
 
@@ -40,7 +40,7 @@ var RankingViewModel = function (rawRanking) {
         } else if (ptsDiff < 0) {
             return '(-' + (-ptsDiff).toFixed(2) + ')';
         } else {
-            return '<span style="visibility: hidden;" aria-hidden="true">(~' + ptsDiff.toFixed(2) + ')</span>';
+            return '<span class="invisible" aria-hidden="true">(~' + ptsDiff.toFixed(2) + ')</span>';
         }
     }, this);
     

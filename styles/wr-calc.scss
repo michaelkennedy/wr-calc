@@ -549,9 +549,21 @@ body {
     }
     th.right {
         text-align: right;
+        width: 9%;
     }
 
     td {
         text-align: right;
     }
+}
+
+// Utility classes replacing what used to be inline styles.
+.invisible {
+    visibility: hidden;
+}
+.ta-left {
+    text-align: left;
+}
+.ta-right {
+    text-align: right;
 }

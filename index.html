@@ -100,16 +100,16 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th style="width: 9%" class="right" title="group points">Pts</th>
-                                <th style="width: 9%" class="right" title="played">Pl</th>
-                                <th style="width: 9%" class="right" title="won">W</th>
+                                <th class="right" title="group points">Pts</th>
+                                <th class="right" title="played">Pl</th>
+                                <th class="right" title="won">W</th>
                                 <!-- ko if: anyDraws -->
-                                <th style="width: 9%" class="right" title="drawn">D</th>
+                                <th class="right" title="drawn">D</th>
                                 <!-- /ko -->
-                                <th style="width: 9%" class="right" title="points difference">PD</th>
-                                <th style="width: 9%" class="right" title="tries difference">TD</th>
-                                <th style="width: 9%" class="right" title="points scored">PF</th>
-                                <th style="width: 9%" class="right" title="tries scored">TF</th>
+                                <th class="right" title="points difference">PD</th>
+                                <th class="right" title="tries difference">TD</th>
+                                <th class="right" title="points scored">PF</th>
+                                <th class="right" title="tries scored">TF</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: table">
@@ -170,7 +170,7 @@
                         </tr>
                         <!-- /ko -->
                         <tr class="teams">
-                            <td colspan="2" style="text-align: left" data-bind="attr: { colspan: $data.triesMatter() ? 2 : 3 }">
+                            <td colspan="2" class="ta-left" data-bind="attr: { colspan: $data.triesMatter() ? 2 : 3 }">
                                 <span class="team-select">
                                     <img class="flag" alt="" data-bind="visible: homeFlagSrc, attr: { src: homeFlagSrc }" />
                                     <select class="beside-flag" data-bind="options: $parent.teams, optionsText: 'displayName', optionsValue: 'id', value: homeId, optionsCaption: homeCaption, disabled: alreadyInRankings"></select>
@@ -181,14 +181,14 @@
                                 <input type="number" min="0" data-bind="value: homeTries, disabled: alreadyInRankings" />
                             </td>
                             <!-- /ko -->
-                            <td colspan="2" style="text-align: right"><input type="number" min="0" data-bind="value: homeScore, disabled: alreadyInRankings" /></td>
-                            <td colspan="2" style="text-align: left"><input type="number" min="0" data-bind="value: awayScore, disabled: alreadyInRankings" /></td>
+                            <td colspan="2" class="ta-right"><input type="number" min="0" data-bind="value: homeScore, disabled: alreadyInRankings" /></td>
+                            <td colspan="2" class="ta-left"><input type="number" min="0" data-bind="value: awayScore, disabled: alreadyInRankings" /></td>
                             <!-- ko if: triesMatter -->
                             <td>
                                 <input type="number" min="0" data-bind="value: awayTries, disabled: alreadyInRankings" />
                             </td>
                             <!-- /ko -->
-                            <td colspan="2" style="text-align: right" data-bind="attr: { colspan: $data.triesMatter() ? 2 : 3 }, class: $data.switched() ? 'switched' : ''">
+                            <td colspan="2" class="ta-right" data-bind="attr: { colspan: $data.triesMatter() ? 2 : 3 }, class: $data.switched() ? 'switched' : ''">
                                 <span class="team-select">
                                     <select class="beside-flag" data-bind="options: $parent.teams, optionsText: 'displayName', optionsValue: 'id', value: awayId, optionsCaption: awayCaption, disabled: alreadyInRankings"></select>
                                     <img class="flag" alt="" data-bind="visible: awayFlagSrc, attr: { src: awayFlagSrc }" />
