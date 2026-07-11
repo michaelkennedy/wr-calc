@@ -4,4 +4,6 @@ gems:
 exclude:
   - Gemfile
   - Gemfile.lock
+include:
+  - _headers
 github: [metadata]

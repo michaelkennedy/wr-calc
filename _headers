@@ -1,0 +1,31 @@
+# Security headers for every response (applied by Cloudflare Pages;
+# GitHub Pages ignores this file).
+# NB: Jekyll excludes _-prefixed files by default; _config.yml includes
+# this one explicitly so it reaches the built site.
+# Notes:
+# - script-src needs 'unsafe-eval' because Knockout compiles data-bind
+#   expressions with new Function().
+# - img-src allows data: for the add-fixture button icon embedded in the CSS.
+# - connect-src allows the World Rugby API the app fetches from.
+# - No 'unsafe-inline' anywhere: there are no inline scripts, handlers or
+#   style attributes in the app. Keep it that way.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://api.wr-rims-prod.pulselive.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  ! Access-Control-Allow-Origin
+
+# Version-named library: contents never change under this path.
+/scripts/lib/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Font files: effectively immutable (rename if ever replaced).
+/styles/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Flag SVGs: effectively immutable (rename if ever replaced).
+/styles/flags/*
+  Cache-Control: public, max-age=31536000, immutable
