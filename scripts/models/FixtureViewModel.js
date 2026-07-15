@@ -83,11 +83,20 @@ var FixtureViewModel = function (parent) {
     // counts are cached below; a live match's timeline is still changing,
     // so isn't cached, and a fetch error isn't cached either since it might
     // be transient (worth retrying on the next load).
+    //
+    // The cache key carries a version: parseMatchTimeline's output shape has
+    // changed more than once during development (fields added, the score
+    // split into two), and a completed match's entry, once cached, is never
+    // re-fetched - so an old-shaped cached object just renders with blank
+    // fields forever against a newer template, silently. Bump TIMELINE_CACHE_VERSION
+    // whenever parseMatchTimeline's return shape changes again, so stale
+    // entries are abandoned (not read, not overwritten - just orphaned)
+    // rather than causing this.
     this.loadTimeline = function () {
         if (self.timeline() || self.timelineLoading() || !self.matchId) {
             return;
         }
-        var cacheKey = 'api/v3/match/' + self.matchId + '/timeline|parsed';
+        var cacheKey = 'api/v3/match/' + self.matchId + '/timeline|parsed|v' + TIMELINE_CACHE_VERSION;
         if (self.status === 'C' && localStorage[cacheKey]) {
             self.timeline(JSON.parse(localStorage[cacheKey]));
             return;

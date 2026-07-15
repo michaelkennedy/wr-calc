@@ -164,6 +164,13 @@ var parseMatchDetail = function (data) {
     return { error: false, teams: teams, officials: officials, playerNames: playerNames };
 };
 
+// Bump this whenever parseMatchTimeline's return shape changes (fields
+// added/removed/renamed). It's part of the localStorage cache key in
+// FixtureViewModel.loadTimeline, so bumping it abandons old-shaped cached
+// entries for completed matches instead of them rendering blank against a
+// newer template.
+var TIMELINE_CACHE_VERSION = 2;
+
 // Parse a /match/{id}/timeline response for the fixture timeline panel:
 // scores, cards and substitutions, one row per event, with the home team's
 // events on the left, the away team's on the right, and a running score in
