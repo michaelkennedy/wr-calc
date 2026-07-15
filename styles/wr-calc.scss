@@ -416,6 +416,14 @@ body {
             margin-left: 6px;
         }
     }
+    // Substitutions as two lines (incoming above outgoing) rather than
+    // side by side, since the fixed-width home/away columns are usually too
+    // narrow to fit both names on one line without wrapping awkwardly.
+    .tl-sub {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .sub-on {
         color: $primary-2;
     }
@@ -525,6 +533,13 @@ body {
     > table {
         margin: 0 auto;
         border-collapse: collapse;
+        // Fixed column widths (see the colgroup in index.html) so opening a
+        // match timeline never resizes the table - auto-layout sizes every
+        // column from the widest content in ANY row sharing it, and a
+        // timeline row can contain a full player name plus a card/sub
+        // label, which is far longer than anything a team dropdown holds.
+        width: 100%;
+        table-layout: fixed;
 
         @include largescreen {
             margin-bottom: 24px + 56px + 2px;
