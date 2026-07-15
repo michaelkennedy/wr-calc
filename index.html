@@ -139,33 +139,6 @@
             </div>
             <div id="fixtures">
                 <table>
-                    <!--
-                        Fixed column widths so the table never resizes: without
-                        this, opening a match timeline (which can contain much
-                        longer text - full player names plus a card/sub label -
-                        than a team dropdown ever holds) forces the whole shared
-                        table wider, since auto-layout sizes every column from
-                        the widest content in ANY row, not just the row being
-                        toggled. Percentages sum to 100% across all 13 columns;
-                        RWC/remove-button stay reserved even when their header
-                        is hidden (same idea as the tfoot padding below), so the
-                        totals don't shift when those columns disappear.
-                    -->
-                    <colgroup>
-                        <col style="width: 14%" /><!-- home team -->
-                        <col style="width: 8%" /><!-- home team / home tries -->
-                        <col style="width: 5%" /><!-- home tries -->
-                        <col style="width: 6.5%" /><!-- home score -->
-                        <col style="width: 6.5%" /><!-- home score -->
-                        <col style="width: 6.5%" /><!-- away score -->
-                        <col style="width: 6.5%" /><!-- away score -->
-                        <col style="width: 5%" /><!-- away tries -->
-                        <col style="width: 8%" /><!-- away team / away tries -->
-                        <col style="width: 14%" /><!-- away team -->
-                        <col style="width: 8%" /><!-- NHA -->
-                        <col style="width: 6.5%" /><!-- RWC / "Timeline" link -->
-                        <col style="width: 5.5%" /><!-- remove button / "Teams" link -->
-                    </colgroup>
                     <thead>
                         <tr>
                             <th colspan="2">Home team</th>
@@ -297,28 +270,15 @@
                         <!--
                             Rendered as real rows/cells of this same table, so the
                             home/score/away columns line up exactly with the teams
-                            row above via the fixed colgroup widths, instead of a
-                            separately-laid-out nested table. The home/away cells
-                            are always colspan 2 and the middle always colspan 6
-                            (matching the "Home team"/"Score"/"Away team" header
-                            spans exactly) regardless of triesMatter, since the
-                            timeline has nothing of its own to put in the tries
-                            sub-columns - letting the score text use that full
-                            width keeps it centred under "Score" and avoids a
-                            band of unused space either side of it.
+                            row above - the home/away cells are always colspan 2
+                            and the middle always colspan 6 (matching the "Home
+                            team"/"Score"/"Away team" header spans exactly)
+                            regardless of triesMatter, since the timeline has
+                            nothing of its own to put in the tries sub-columns.
+                            No separate team-name header row here - the teams
+                            row right above already shows both team names, so
+                            repeating them would just be noise.
                         -->
-                        <tr class="tl-header">
-                            <td class="tl-home" colspan="2" data-bind="text: timeline().homeTeam"></td>
-                            <td colspan="6"></td>
-                            <td class="tl-away" colspan="2" data-bind="text: timeline().awayTeam"></td>
-                            <td></td>
-                            <!-- ko if: $parent.showIsRwc -->
-                            <td></td>
-                            <!-- /ko -->
-                            <!-- ko ifnot: $parent.event -->
-                            <td></td>
-                            <!-- /ko -->
-                        </tr>
                         <!-- ko foreach: timeline().rows -->
                         <!-- ko if: $data.marker -->
                         <tr class="tl-marker">

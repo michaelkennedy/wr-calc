@@ -378,13 +378,25 @@ body {
     // (reusing the teams row's own colspans) rather than a separately laid
     // out nested table, so these columns share its column widths instead of
     // drifting out of alignment with the score columns above.
-    tr.tl-header td, tr.tl-marker td, .tl-home, .tl-away, .tl-mid {
+    //
+    // The table itself stays auto-layout (no fixed widths), so it's sized
+    // and centred the same way it always was. The risk with that is a long
+    // player name plus a card/sub label is far longer than anything a team
+    // dropdown normally holds, and auto-layout sizes a column from the
+    // widest content in ANY row sharing it - so one very long timeline
+    // entry could still widen the home/away columns for every fixture.
+    // tl-home/tl-away cap their own width and ellipsis instead, so they
+    // can never be the thing that grows those columns; the team-select
+    // dropdowns above remain what actually sets the width.
+    tr.tl-marker td, .tl-home, .tl-away, .tl-mid {
         font-size: 12px;
         padding: 2px 8px;
     }
-    tr.tl-header td {
-        @extend .secondaryText;
-        font-weight: 500;
+    .tl-home, .tl-away {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .tl-home {
         text-align: right;
@@ -417,8 +429,8 @@ body {
         }
     }
     // Substitutions as two lines (incoming above outgoing) rather than
-    // side by side, since the fixed-width home/away columns are usually too
-    // narrow to fit both names on one line without wrapping awkwardly.
+    // side by side, since on-line and off-line names together are usually
+    // too wide to fit alongside each other within the capped width above.
     .tl-sub {
         white-space: nowrap;
         overflow: hidden;
@@ -533,13 +545,6 @@ body {
     > table {
         margin: 0 auto;
         border-collapse: collapse;
-        // Fixed column widths (see the colgroup in index.html) so opening a
-        // match timeline never resizes the table - auto-layout sizes every
-        // column from the widest content in ANY row sharing it, and a
-        // timeline row can contain a full player name plus a card/sub
-        // label, which is far longer than anything a team dropdown holds.
-        width: 100%;
-        table-layout: fixed;
 
         @include largescreen {
             margin-bottom: 24px + 56px + 2px;
