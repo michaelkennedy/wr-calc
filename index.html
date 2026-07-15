@@ -270,14 +270,21 @@
                         <!--
                             Rendered as real rows/cells of this same table, so the
                             home/score/away columns line up exactly with the teams
-                            row above - the home/away cells are always colspan 2
-                            and the middle always colspan 6 (matching the "Home
-                            team"/"Score"/"Away team" header spans exactly)
-                            regardless of triesMatter, since the timeline has
-                            nothing of its own to put in the tries sub-columns.
-                            No separate team-name header row here - the teams
-                            row right above already shows both team names, so
-                            repeating them would just be noise.
+                            row above - the home/away cells are always colspan 2,
+                            matching the "Home team"/"Away team" header spans
+                            exactly, regardless of triesMatter. No separate
+                            team-name header row here - the teams row right above
+                            already shows both team names, so repeating them would
+                            just be noise.
+
+                            The running score is two separate cells (home/away),
+                            not one "H - A" string, positioned to match the home
+                            and away Complete score boxes in the teams row exactly
+                            (tries-home/homeScore/awayScore/tries-away, same as
+                            that row): a single centred string looks like it lines
+                            up with both boxes but can't actually line up with
+                            either, since its width - and so its centre - shifts
+                            with the digit count on each side.
                         -->
                         <!-- ko foreach: timeline().rows -->
                         <!-- ko if: $data.marker -->
@@ -296,10 +303,10 @@
                                 <!-- /ko -->
                                 <!-- /ko -->
                             </td>
-                            <td class="tl-mid" colspan="6">
-                                <span class="tl-time secondaryText" data-bind="text: time"></span>
-                                <!-- ko if: score --><span class="tl-score" data-bind="text: score"></span><!-- /ko -->
-                            </td>
+                            <td class="tl-time secondaryText" data-bind="text: time"></td>
+                            <td class="tl-score tl-score-home" colspan="2" data-bind="text: homeScore"></td>
+                            <td class="tl-score tl-score-away" colspan="2" data-bind="text: awayScore"></td>
+                            <td></td>
                             <td class="tl-away" colspan="2">
                                 <!-- ko with: away -->
                                 <!-- ko ifnot: isSub --><!-- ko if: card --><span class="tl-card" data-bind="css: card"></span><!-- /ko --> <span class="secondaryText" data-bind="text: label"></span> <span data-bind="text: player"></span><!-- /ko -->

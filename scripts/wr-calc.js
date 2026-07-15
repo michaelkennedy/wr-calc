@@ -218,7 +218,7 @@ var parseMatchTimeline = function (data, playerNames) {
             var pair = pendingSubs[t.link];
             if (!pair) {
                 var cell = { isSub: true, on: '', off: '', label: '', card: null };
-                var row = { time: t.time.label, score: '', home: null, away: null };
+                var row = { time: t.time.label, homeScore: '', awayScore: '', home: null, away: null };
                 row[side] = cell;
                 pair = pendingSubs[t.link] = { cell: cell, row: row, seen: 0 };
             }
@@ -234,10 +234,18 @@ var parseMatchTimeline = function (data, playerNames) {
             return;
         }
 
-        var scoreText = '';
+        // The running score is two separate numbers - not one "H - A"
+        // string - so each can sit directly under its own team's Complete
+        // score box above, the same way the home/away event text sits
+        // under its own team's dropdown. A single centred string looks
+        // like it should line up with both boxes but can't actually line
+        // up with either, since its width (and so its centre) changes with
+        // how many digits are in each total.
+        var homeScoreText = '', awayScoreText = '';
         if (t.points) {
             score[t.teamIndex] += t.points;
-            scoreText = currentScore();
+            homeScoreText = String(score[0]);
+            awayScoreText = String(score[1]);
         }
         // World Rugby's own match centre only ever shows a plain "Yellow
         // Card" or "Red Card" - it doesn't distinguish a 20-minute red or a
@@ -248,7 +256,7 @@ var parseMatchTimeline = function (data, playerNames) {
         if (isCard) {
             card = /yellow/i.test(t.typeLabel || '') ? 'yellow' : 'red';
         }
-        var eventRow = { time: t.time.label, score: scoreText, home: null, away: null };
+        var eventRow = { time: t.time.label, homeScore: homeScoreText, awayScore: awayScoreText, home: null, away: null };
         eventRow[side] = { isSub: false, label: t.typeLabel, player: player, on: '', off: '', card: card };
         rows.push(eventRow);
     });
