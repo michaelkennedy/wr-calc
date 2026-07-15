@@ -212,14 +212,16 @@
                             <td class="details-center" data-bind="text: $data.getDisplayChange(3), style: { 'text-decoration': $data.activeChange() == 3 ?  'underline' : 'inherit'}"></td>
                             <td class="details-left" data-bind="text: $data.getDisplayChange(4), style: { 'text-decoration': $data.activeChange() == 4 ?  'underline' : 'inherit'}"></td>
                             <td colspan="2" class="details-right" data-bind="text: $data.awayRankingBefore() ? $data.awayRankingBefore().toFixed(2) : ''"></td>
-                            <td colspan="2"></td>
+                            <td colspan="1"></td>
+                            <td class="details-right"><a href="#" title="Match timeline" data-bind="visible: timelineApplicable, click: toggleTimeline, text: timelineVisible() ? 'hide' : 'TL', css: { disabledText: timelineAvailable() === false }"></a></td>
                             <td class="details-right"><a href="#" title="Team sheets and officials" data-bind="visible: matchId, click: toggleDetail, text: detailVisible() ? 'hide' : 'Teams'"></a></td>
                         </tr>
                         <!-- /ko -->
                         <!-- ko if: alreadyInRankings -->
                         <tr class="possible-changes">
                             <td colspan="10" class="details-center" title="The match is complete and kicked off 90 minutes or more before the latest rankings, so assume it is already included">Already ranked*</td>
-                            <td colspan="2"></td>
+                            <td colspan="1"></td>
+                            <td class="details-right"><a href="#" title="Match timeline" data-bind="visible: timelineApplicable, click: toggleTimeline, text: timelineVisible() ? 'hide' : 'TL', css: { disabledText: timelineAvailable() === false }"></a></td>
                             <td class="details-right"><a href="#" title="Team sheets and officials" data-bind="visible: matchId, click: toggleDetail, text: detailVisible() ? 'hide' : 'Teams'"></a></td>
                         </tr>
                         <!-- /ko -->
@@ -253,6 +255,84 @@
                                 <!-- /ko -->
                             </td>
                         </tr>
+                        <!-- /ko -->
+                        <!-- ko if: timelineVisible() && timelineLoading() -->
+                        <tr class="match-detail">
+                            <td colspan="13"><span class="secondaryText">Loading timeline&hellip;</span></td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko if: timelineVisible() && timeline() && timeline().error -->
+                        <tr class="match-detail">
+                            <td colspan="13"><span class="secondaryText">Could not load the timeline.</span></td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko if: timelineVisible() && timeline() && !timeline().error -->
+                        <!--
+                            Rendered as real rows/cells of this same table, reusing the
+                            teams row's own colspans (home/[tries]/score/[tries]/away),
+                            with the two score columns merged into one middle column -
+                            so the home/score/away columns line up exactly with the
+                            teams row above, instead of being a separately-laid-out
+                            nested table that can't share column widths with this one.
+                        -->
+                        <tr class="tl-header">
+                            <td class="tl-home" data-bind="text: timeline().homeTeam, attr: { colspan: triesMatter() ? 2 : 3 }"></td>
+                            <!-- ko if: triesMatter -->
+                            <td></td>
+                            <!-- /ko -->
+                            <td colspan="4"></td>
+                            <!-- ko if: triesMatter -->
+                            <td></td>
+                            <!-- /ko -->
+                            <td class="tl-away" data-bind="text: timeline().awayTeam, attr: { colspan: triesMatter() ? 2 : 3 }"></td>
+                            <td></td>
+                            <!-- ko if: $parent.showIsRwc -->
+                            <td></td>
+                            <!-- /ko -->
+                            <!-- ko ifnot: $parent.event -->
+                            <td></td>
+                            <!-- /ko -->
+                        </tr>
+                        <!-- ko foreach: timeline().rows -->
+                        <!-- ko if: $data.marker -->
+                        <tr class="tl-marker">
+                            <td colspan="13"><span data-bind="text: marker"></span> <span class="tl-score" data-bind="text: score"></span></td>
+                        </tr>
+                        <!-- /ko -->
+                        <!-- ko ifnot: $data.marker -->
+                        <tr>
+                            <td class="tl-home" data-bind="attr: { colspan: $parent.triesMatter() ? 2 : 3 }">
+                                <!-- ko with: home -->
+                                <!-- ko ifnot: isSub --><span data-bind="text: player"></span> <span class="secondaryText" data-bind="text: label"></span> <!-- ko if: card --><span class="tl-card" data-bind="css: card"></span><!-- /ko --><!-- /ko -->
+                                <!-- ko if: isSub --><span class="sub-on">&#9650;</span> <span data-bind="text: on"></span>&ensp;<span class="sub-off">&#9660;</span> <span data-bind="text: off"></span><!-- /ko -->
+                                <!-- /ko -->
+                            </td>
+                            <!-- ko if: $parent.triesMatter -->
+                            <td></td>
+                            <!-- /ko -->
+                            <td class="tl-mid" colspan="4">
+                                <span class="tl-time secondaryText" data-bind="text: time"></span>
+                                <!-- ko if: score --><span class="tl-score" data-bind="text: score"></span><!-- /ko -->
+                            </td>
+                            <!-- ko if: $parent.triesMatter -->
+                            <td></td>
+                            <!-- /ko -->
+                            <td class="tl-away" data-bind="attr: { colspan: $parent.triesMatter() ? 2 : 3 }">
+                                <!-- ko with: away -->
+                                <!-- ko ifnot: isSub --><!-- ko if: card --><span class="tl-card" data-bind="css: card"></span><!-- /ko --> <span class="secondaryText" data-bind="text: label"></span> <span data-bind="text: player"></span><!-- /ko -->
+                                <!-- ko if: isSub --><span class="sub-on">&#9650;</span> <span data-bind="text: on"></span>&ensp;<span class="sub-off">&#9660;</span> <span data-bind="text: off"></span><!-- /ko -->
+                                <!-- /ko -->
+                            </td>
+                            <td></td>
+                            <!-- ko if: $parents[1].showIsRwc -->
+                            <td></td>
+                            <!-- /ko -->
+                            <!-- ko ifnot: $parents[1].event -->
+                            <td></td>
+                            <!-- /ko -->
+                        </tr>
+                        <!-- /ko -->
+                        <!-- /ko -->
                         <!-- /ko -->
                     </tbody>
                     <!-- /ko -->

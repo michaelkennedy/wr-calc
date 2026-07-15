@@ -373,6 +373,73 @@ body {
             padding-top: 3px;
         }
     }
+    // The match timeline: home events left, away events right, score down
+    // the middle. Rendered as rows/cells of the fixtures table itself
+    // (reusing the teams row's own colspans) rather than a separately laid
+    // out nested table, so these columns share its column widths instead of
+    // drifting out of alignment with the score columns above.
+    tr.tl-header td, tr.tl-marker td, .tl-home, .tl-away, .tl-mid {
+        font-size: 12px;
+        padding: 2px 8px;
+    }
+    tr.tl-header td {
+        @extend .secondaryText;
+        font-weight: 500;
+    }
+    .tl-home {
+        text-align: right;
+    }
+    .tl-away {
+        text-align: left;
+    }
+    .tl-mid {
+        text-align: center;
+        white-space: nowrap;
+
+        .tl-time {
+            font-size: 10px;
+        }
+        .tl-score {
+            font-weight: 500;
+            margin-left: 6px;
+        }
+    }
+    tr.tl-marker td {
+        text-align: center;
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        padding: 3px 8px;
+        @extend .secondaryText;
+
+        .tl-score {
+            font-weight: 500;
+            margin-left: 6px;
+        }
+    }
+    .sub-on {
+        color: $primary-2;
+    }
+    .sub-off {
+        color: $accent;
+    }
+    // Card icons: a plain coloured rectangle, same as World Rugby's own
+    // match centre uses. The source data doesn't reliably distinguish a
+    // straight red from a 20-minute red or an upgraded yellow, so - like
+    // World Rugby - we just show Yellow or Red.
+    .tl-card {
+        display: inline-block;
+        width: 8px;
+        height: 12px;
+        border-radius: 1px;
+        vertical-align: middle;
+        margin: 0 1px;
+    }
+    .tl-card.yellow {
+        background: #ffcc00;
+    }
+    .tl-card.red {
+        background: $accent;
+    }
 }
 
 // Team flags, shown in the rankings and beside the fixture team dropdowns.

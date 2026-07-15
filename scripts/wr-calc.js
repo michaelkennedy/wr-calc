@@ -148,7 +148,121 @@ var parseMatchDetail = function (data) {
             display: name + (country ? ' (' + country + ')' : '')
         };
     });
-    return { error: false, teams: teams, officials: officials };
+
+    // Map player ids (and altIds) to names, for the timeline.
+    var playerNames = {};
+    (data.teams || []).forEach(function (t) {
+        (((t.teamList && t.teamList.list)) || []).forEach(function (e) {
+            var p = e.player;
+            if (p && p.name && p.name.display) {
+                if (p.id) playerNames[p.id] = p.name.display;
+                if (p.altId) playerNames[p.altId] = p.name.display;
+            }
+        });
+    });
+
+    return { error: false, teams: teams, officials: officials, playerNames: playerNames };
+};
+
+// Parse a /match/{id}/timeline response for the fixture timeline panel:
+// scores, cards and substitutions, one row per event, with the home team's
+// events on the left, the away team's on the right, and a running score in
+// the middle. playerNames maps player ids (and altIds) to display names,
+// since the timeline itself only carries ids.
+var parseMatchTimeline = function (data, playerNames) {
+    var teams = (data.match && data.match.teams) || [];
+
+    var score = [0, 0];
+    var rows = [];
+    var pendingSubs = {};
+    var currentScore = function () { return score[0] + ' - ' + score[1]; };
+
+    // The feed is ordered by phase (L1 = first half, L2 = second half), so
+    // first-half stoppage time (say 42:20) correctly precedes second-half
+    // events whose clock restarts at 40:00. Insert a Half time marker at the
+    // phase transition to make that readable. (The feed's own status-change
+    // entries can arrive after the first second-half events, so the
+    // transition between rendered events is the reliable signal.)
+    var lastPhase = null;
+    var halfTimeAdded = false;
+
+    (data.timeline || []).forEach(function (t) {
+        // Only scores, cards and substitutions. Everything else - match
+        // status changes, and (in sevens especially) tackles, offloads,
+        // linebreaks and the like - is just noise here. A scoring event is
+        // identified by points rather than by group/type, so it covers
+        // tries, conversions, penalties, drop goals and penalty tries alike
+        // without having to enumerate every scoring type; a card is
+        // identified from typeLabel rather than an exact group code, so an
+        // unfamiliar card type (e.g. a 20-minute red) still shows up rather
+        // than silently vanishing.
+        var isScore = t.points > 0;
+        var isCard = /card/i.test(t.typeLabel || '');
+        var isSub = t.group === 'Sub On' || t.group === 'Sub Off';
+        if (!isScore && !isCard && !isSub) return;
+
+        if (!halfTimeAdded && lastPhase === 'L1' && (t.phase === 'LHT' || t.phase === 'L2')) {
+            rows.push({ marker: 'Half time', score: currentScore(), time: '', home: null, away: null });
+            halfTimeAdded = true;
+        }
+        if (t.phase) {
+            lastPhase = t.phase;
+        }
+
+        var player = playerNames[t.playerId] || '';
+        var side = t.teamIndex === 0 ? 'home' : 'away';
+
+        // Substitutions arrive as an on and an off entry sharing a link id,
+        // in either order; combine each pair into one cell.
+        if (t.group === 'Sub On' || t.group === 'Sub Off') {
+            var pair = pendingSubs[t.link];
+            if (!pair) {
+                var cell = { isSub: true, on: '', off: '', label: '', card: null };
+                var row = { time: t.time.label, score: '', home: null, away: null };
+                row[side] = cell;
+                pair = pendingSubs[t.link] = { cell: cell, row: row, seen: 0 };
+            }
+            if (t.group === 'Sub On') {
+                pair.cell.on = player;
+            } else {
+                pair.cell.off = player;
+            }
+            pair.seen++;
+            if (pair.seen === 2) {
+                rows.push(pair.row);
+            }
+            return;
+        }
+
+        var scoreText = '';
+        if (t.points) {
+            score[t.teamIndex] += t.points;
+            scoreText = currentScore();
+        }
+        // World Rugby's own match centre only ever shows a plain "Yellow
+        // Card" or "Red Card" - it doesn't distinguish a 20-minute red or a
+        // yellow later upgraded on review from a straight red, so neither
+        // do we; the source data has no field that reliably tells them
+        // apart anyway. Card colour drives a small icon alongside the text.
+        var card = null;
+        if (isCard) {
+            card = /yellow/i.test(t.typeLabel || '') ? 'yellow' : 'red';
+        }
+        var eventRow = { time: t.time.label, score: scoreText, home: null, away: null };
+        eventRow[side] = { isSub: false, label: t.typeLabel, player: player, on: '', off: '', card: card };
+        rows.push(eventRow);
+    });
+
+    if (data.match && data.match.status === 'C') {
+        rows.push({ marker: 'Full time', score: currentScore(), time: '', home: null, away: null });
+    }
+
+    return {
+        error: false,
+        homeTeam: (teams[0] && teams[0].name) || '',
+        awayTeam: (teams[1] && teams[1].name) || '',
+        rows: rows
+    };
 };
 
 // Format a kickoff time for display; produces the same output as the old
@@ -531,6 +645,15 @@ var fixturesLoaded = function (fixtures, rankings, event) {
             // For in-progress matches, show the match clock too.
             if ((e.status === 'L1' || e.status === 'L2' || e.status === 'LHT') && e.clock && e.clock.label) {
                 fixture.liveScoreMode += ' · ' + e.clock.label;
+            }
+
+            // The timeline only has anything to show once a match has
+            // kicked off; check eagerly (not just on click) so the link can
+            // reflect data availability - greyed out if there's nothing -
+            // without waiting for the user to click it first.
+            fixture.timelineApplicable = (e.status === 'C' || e.status === 'L1' || e.status === 'L2' || e.status === 'LHT');
+            if (fixture.timelineApplicable) {
+                fixture.loadTimeline();
             }
 
             if (event) {

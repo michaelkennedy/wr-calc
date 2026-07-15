@@ -16,6 +16,11 @@ var FixtureViewModel = function (parent) {
     this.kickoff = null;
     this.alreadyInRankings = false;
 
+    // Set once the fixture's match status is known. The timeline is only
+    // meaningful once a match has kicked off.
+    this.status = null;
+    this.timelineApplicable = false;
+
     // Only set elsewhere for "event" mode
     this.homeCaption = 'Home...';
     this.awayCaption = 'Away...';
@@ -33,11 +38,24 @@ var FixtureViewModel = function (parent) {
     // Set when the fixture was loaded from the WR match API.
     this.matchId = null;
 
-    // On-demand match detail (team sheets and officials) from the summary API.
+    // On-demand match detail (team sheets and officials) from the summary
+    // API, and the match timeline on its own toggle. The parsed summary is
+    // shared: the timeline needs its player-name map, so whichever panel is
+    // opened first triggers the summary request exactly once.
     this.detail = ko.observable(null);
     this.detailVisible = ko.observable(false);
     this.detailLoading = ko.observable(false);
+    this.timeline = ko.observable(null);
+    this.timelineVisible = ko.observable(false);
+    this.timelineLoading = ko.observable(false);
     var self = this;
+    var parsedSummary = null;
+    var getParsedSummary = function () {
+        if (!parsedSummary) {
+            parsedSummary = getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/summary').then(parseMatchDetail);
+        }
+        return parsedSummary;
+    };
     this.toggleDetail = function () {
         if (self.detailVisible()) {
             self.detailVisible(false);
@@ -46,8 +64,8 @@ var FixtureViewModel = function (parent) {
         self.detailVisible(true);
         if (!self.detail() && !self.detailLoading() && self.matchId) {
             self.detailLoading(true);
-            getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/summary').then(function (data) {
-                self.detail(parseMatchDetail(data));
+            getParsedSummary().then(function (detail) {
+                self.detail(detail);
             }).catch(function () {
                 self.detail({ error: true, officials: [], teams: [] });
             }).then(function () {
@@ -55,6 +73,61 @@ var FixtureViewModel = function (parent) {
             });
         }
     };
+
+    // The timeline is only meaningful once a match has kicked off
+    // (timelineApplicable, set in wr-calc.js from the match status), and is
+    // loaded eagerly - not just on click - as soon as that's true, so the
+    // link can already show as greyed-out if the match turns out to have no
+    // timeline data, rather than only discovering that after a click.
+    // Cached in localStorage once a match is complete, mirroring how try
+    // counts are cached below; a live match's timeline is still changing,
+    // so isn't cached, and a fetch error isn't cached either since it might
+    // be transient (worth retrying on the next load).
+    this.loadTimeline = function () {
+        if (self.timeline() || self.timelineLoading() || !self.matchId) {
+            return;
+        }
+        var cacheKey = 'api/v3/match/' + self.matchId + '/timeline|parsed';
+        if (self.status === 'C' && localStorage[cacheKey]) {
+            self.timeline(JSON.parse(localStorage[cacheKey]));
+            return;
+        }
+        self.timelineLoading(true);
+        Promise.all([
+            getParsedSummary(),
+            getJSON('https://api.wr-rims-prod.pulselive.com/rugby/v3/match/' + self.matchId + '/timeline')
+        ]).then(function (results) {
+            var parsed = parseMatchTimeline(results[1], results[0].playerNames);
+            self.timeline(parsed);
+            if (self.status === 'C') {
+                localStorage[cacheKey] = JSON.stringify(parsed);
+            }
+        }).catch(function () {
+            self.timeline({ error: true, homeTeam: '', awayTeam: '', rows: [] });
+        }).then(function () {
+            self.timelineLoading(false);
+        });
+    };
+    this.toggleTimeline = function () {
+        if (self.timelineVisible()) {
+            self.timelineVisible(false);
+            return;
+        }
+        if (self.timelineAvailable() === false) {
+            return;
+        }
+        self.timelineVisible(true);
+        self.loadTimeline();
+    };
+    // null while unknown/loading, then true/false once we know whether this
+    // match actually has timeline data - drives the greyed-out link state.
+    this.timelineAvailable = ko.pureComputed(function () {
+        var t = self.timeline();
+        if (!t) {
+            return null;
+        }
+        return !t.error && t.rows.length > 0;
+    });
 
     // Flags for the currently selected teams.
     this.homeFlagSrc = ko.computed(function () {
