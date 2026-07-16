@@ -303,11 +303,24 @@
                                 <!-- /ko -->
                                 <!-- /ko -->
                             </td>
-                            <td class="tl-time secondaryText" data-bind="text: time"></td>
+                            <td></td>
                             <td class="tl-score tl-score-home" colspan="2" data-bind="text: homeScore"></td>
                             <td class="tl-score tl-score-away" colspan="2" data-bind="text: awayScore"></td>
                             <td></td>
                             <td class="tl-away" colspan="2">
+                                <!--
+                                    The event time sits here, not in its own
+                                    column: the "tries" columns either side of
+                                    the score only have a natural width when
+                                    triesMatter is true (event/pool view), which
+                                    isn't the common case, so a dedicated time
+                                    column would only get width when a timeline
+                                    happened to be open, nudging the table on
+                                    every open/close. This column's width always
+                                    comes from the away team-select instead, so
+                                    it can't cause that.
+                                -->
+                                <span class="tl-time secondaryText" data-bind="text: time"></span>
                                 <!-- ko with: away -->
                                 <!-- ko ifnot: isSub --><!-- ko if: card --><span class="tl-card" data-bind="css: card"></span><!-- /ko --> <span class="secondaryText" data-bind="text: label"></span> <span data-bind="text: player"></span><!-- /ko -->
                                 <!-- ko if: isSub -->

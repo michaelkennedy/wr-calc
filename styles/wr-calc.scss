@@ -388,7 +388,7 @@ body {
     // tl-home/tl-away cap their own width and ellipsis instead, so they
     // can never be the thing that grows those columns; the team-select
     // dropdowns above remain what actually sets the width.
-    tr.tl-marker td, .tl-home, .tl-away, .tl-time, .tl-score {
+    tr.tl-marker td, .tl-home, .tl-away, .tl-score {
         font-size: 12px;
         padding: 2px 8px;
     }
@@ -404,10 +404,11 @@ body {
     .tl-away {
         text-align: left;
     }
+    // Prefixed onto the away cell rather than given its own column - see
+    // the comment in index.html for why.
     .tl-time {
-        text-align: center;
         font-size: 10px;
-        white-space: nowrap;
+        margin-right: 4px;
     }
     // Two separate cells, not one "H - A" string, so each lines up with
     // its own team's Complete score box in the teams row above.
